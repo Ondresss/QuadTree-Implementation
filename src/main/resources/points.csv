@@ -1,26 +1,51 @@
-100.5,100.2
-105.0,110.5
-95.8,120.3
-102.1,98.7
-110.0,105.0
-400.0,400.0
-405.0,405.0
-395.0,395.0
-398.0,402.0
-402.0,398.0
-700.5,150.0
-710.0,160.0
-720.0,140.0
-705.0,155.0
-50.0,750.0
-60.0,760.0
-45.0,740.0
-55.0,755.0
-10.0,10.0
-790.0,790.0
-10.0,790.0
-790.0,10.0
-400.0,100.0
-400.0,700.0
-100.0,400.0
-700.0,400.0
+100.5,100.2,CZ,Vystaviste 1,Praha
+105.0,110.5,CZ,Bubenska 14,Praha
+95.8,120.3,CZ,U Pergamenky 2,Praha
+102.1,98.7,CZ,Plynarni 10,Praha
+110.0,105.0,CZ,Jankovcova 3,Praha
+400.0,400.0,CZ,Namesti Svobody 1,Brno
+405.0,405.0,CZ,Ceska 5,Brno
+395.0,395.0,CZ,Husova 12,Brno
+398.0,402.0,CZ,Masarykova 2,Brno
+402.0,398.0,CZ,Orli 7,Brno
+700.5,150.0,SK,Hlavne namestie 1,Bratislava
+710.0,160.0,SK,Obchodna 3,Bratislava
+720.0,140.0,SK,Postova 5,Bratislava
+705.0,155.0,SK,Laurinska 8,Bratislava
+50.0,750.0,CZ,Prokesovo namesti 1,Ostrava
+60.0,760.0,CZ,28. rijna 10,Ostrava
+45.0,740.0,CZ,Nadrazni 5,Ostrava
+55.0,755.0,CZ,Stodolni 2,Ostrava
+10.0,10.0,DE,Alexanderplatz 1,Berlin
+790.0,790.0,AT,Stephansplatz 1,Wien
+10.0,790.0,PL,Rynek Glowny 1,Krakow
+790.0,10.0,DE,Marienplatz 1,Munchen
+400.0,100.0,CZ,Namesti Republiky 1,Plzen
+400.0,700.0,CZ,Velke namesti 1,Hradec Kralove
+100.0,400.0,CZ,Mirove namesti 1,Usti nad Labem
+700.0,400.0,CZ,Namesti Premysla Otakara II 1,Ceske Budejovice
+200.0,200.0,CZ,Namesti 1,Liberec
+210.5,215.0,CZ,Sokolska 4,Liberec
+190.0,205.2,CZ,Ruprechticka 12,Liberec
+205.0,195.0,CZ,5. kvetna 8,Liberec
+220.0,220.0,CZ,Pastelova 2,Liberec
+600.0,600.0,CZ,Prazska 1,Pribram
+610.0,610.0,CZ,Milinska 5,Pribram
+590.0,595.0,CZ,Legerova 10,Pribram
+605.0,605.0,CZ,Namesti TGM 3,Pribram
+615.0,585.0,CZ,Dlouha 7,Pribram
+150.0,650.0,CZ,U Stadionu 1,Mlada Boleslav
+160.0,660.0,CZ,Trida Vaclava Klementa 2,Mlada Boleslav
+145.0,640.0,CZ,Havlickova 5,Mlada Boleslav
+155.0,655.0,CZ,Palackeho 11,Mlada Boleslav
+500.0,50.0,PL,Warszawska 10,Wroclaw
+510.0,60.0,PL,Legnicka 45,Wroclaw
+490.0,40.0,PL,Ruska 2,Wroclaw
+50.0,50.0,CZ,Horni 1,As
+50.0,100.0,CZ,Horni 2,As
+50.0,150.0,CZ,Horni 3,As
+50.0,200.0,CZ,Horni 4,As
+400.0,200.0,CZ,Stredova 1,Jihlava
+400.0,300.0,CZ,Stredova 2,Jihlava
+400.0,500.0,CZ,Stredova 3,Jihlava
+400.0,600.0,CZ,Stredova 4,Jihlava

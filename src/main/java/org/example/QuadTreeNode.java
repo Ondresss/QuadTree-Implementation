@@ -9,6 +9,8 @@ public class QuadTreeNode {
     private List<QuadTreePoint> points = null;
     private QuadTreeBoundingBox boundingBox = null;
     private int maxDepth = 10;
+
+
     public QuadTreeNode(int dimension,int capacity,QuadTreeBoundingBox boundingBox,int maxDepth) {
         this.dimension = dimension;
         this.children = new ArrayList<QuadTreeNode>(1 << dimension);
@@ -31,6 +33,7 @@ public class QuadTreeNode {
             this.divide();
         }
     }
+
 
     private Boolean alreadyHasPoint(QuadTreePoint point) {
         for(QuadTreePoint p : this.points) {

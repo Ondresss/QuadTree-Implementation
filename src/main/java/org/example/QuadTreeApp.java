@@ -29,7 +29,7 @@ public class QuadTreeApp extends  Application {
             maxs.add((double)this.CANVAS_WIDTH);
             maxs.add((double)this.CANVAS_HEIGHT);
             QuadTreeBoundingBox rootBox = new QuadTreeBoundingBox(mins, maxs);
-            this.root = new QuadTreeNode(2, 1 << 2, rootBox,3);
+            this.root = new QuadTreeNode(2, 4, rootBox,10);
             Canvas canvas = new Canvas(this.CANVAS_WIDTH,this.CANVAS_HEIGHT);
             this.ctx = canvas.getGraphicsContext2D();
 
@@ -55,19 +55,14 @@ public class QuadTreeApp extends  Application {
         if (node == null) return;
 
         QuadTreeBoundingBox box = node.getBoundingBox();
-
-        double minX = box.getMin().get(0);
-        double minY = box.getMin().get(1);
-        double maxX = box.getMax().get(0);
-        double maxY = box.getMax().get(1);
-
-        double width = maxX - minX;
-        double height = maxY - minY;
+        double x = box.getMin().get(0);
+        double y = box.getMin().get(1);
+        double w = box.getMax().get(0) - x;
+        double h = box.getMax().get(1) - y;
 
         this.ctx.setStroke(Color.BLACK);
-        this.ctx.setLineWidth(0.5);
-        this.ctx.strokeRect(minX, minY, width, height);
-
+        this.ctx.setLineWidth(1);
+        this.ctx.strokeRect(x, y, w, h);
         if (!node.getChildren().isEmpty()) {
             for (QuadTreeNode child : node.getChildren()) {
                 drawNode(child);
@@ -88,11 +83,12 @@ public class QuadTreeApp extends  Application {
         while((line = bufferedReader.readLine()) != null) {
             String[] pointsStr = line.split(",");
             ArrayList<Double> coords = new ArrayList<>();
-            for(String point : pointsStr) {
-                Double quadPointDouble = Double.parseDouble(point);
+            for(int i = 0; i < 2; ++i) {
+                Double quadPointDouble = Double.parseDouble(pointsStr[i]);
                 coords.add(quadPointDouble);
             }
-            points.add(new QuadTreePoint(coords));
+            QuadTreeData data = new QuadTreeData(pointsStr[2],pointsStr[3],pointsStr[4]);
+            points.add(new QuadTreePoint(coords,data));
         }
         bufferedReader.close();
         return points;

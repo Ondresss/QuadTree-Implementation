@@ -7,9 +7,12 @@ import java.util.Objects;
 public class QuadTreePoint {
 
     private List<Double> coords = null;
+    private QuadTreeData data;
 
-    public QuadTreePoint(ArrayList<Double> coords) {
+
+    public QuadTreePoint(ArrayList<Double> coords,QuadTreeData data) {
         this.coords = coords;
+        this.data = data;
     }
 
     public List<Double> getCoords() {
