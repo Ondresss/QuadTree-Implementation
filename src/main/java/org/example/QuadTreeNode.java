@@ -20,6 +20,35 @@ public class QuadTreeNode {
         this.maxDepth = maxDepth;
     }
 
+
+    public QuadTreePoint pointSearch(QuadTreePoint point) {
+        if(!this.children.isEmpty()) {
+            ArrayList<Double> mids = this.boundingBox.getMids();
+            int index = this.getPointIndex(point,mids);
+            return this.children.get(index).pointSearch(point);
+        }
+        for(QuadTreePoint p : this.points) {
+            if(p.equals(point)) return p;
+        }
+        return null;
+    }
+
+    public List<QuadTreePoint> rangeScan(QuadTreeBoundingBox boundingBox) {
+        List<QuadTreePoint> results = new ArrayList<>();
+        Boolean doesBoundingIntersects = this.boundingBox.intersects(boundingBox);
+        if(!doesBoundingIntersects) {
+            return results;
+        }
+        if(!this.children.isEmpty()) {
+            for(QuadTreeNode child : this.children) {
+                results.addAll(child.rangeScan(boundingBox));
+            }
+        } else {
+            results.addAll(this.points);
+        }
+        return results;
+    }
+
     public void insert(QuadTreePoint point) {
         if (!children.isEmpty()) {
             ArrayList<Double> mids = this.boundingBox.getMids();
@@ -33,7 +62,6 @@ public class QuadTreeNode {
             this.divide();
         }
     }
-
 
     private Boolean alreadyHasPoint(QuadTreePoint point) {
         for(QuadTreePoint p : this.points) {
@@ -118,6 +146,14 @@ public class QuadTreeNode {
 
     public void setBoundingBox(QuadTreeBoundingBox boundingBox) {
         this.boundingBox = boundingBox;
+    }
+
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    public void setMaxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
     }
 }
 

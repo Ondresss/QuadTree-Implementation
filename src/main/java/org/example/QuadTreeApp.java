@@ -1,10 +1,16 @@
 package org.example;
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -39,11 +45,95 @@ public class QuadTreeApp extends  Application {
             }
 
             this.drawNode(this.root);
-            StackPane rootPane = new StackPane();
-            rootPane.getChildren().add(canvas);
+            TextField xInput = new TextField();
+            xInput.setPromptText("X coord");
+
+            TextField yInput = new TextField();
+            yInput.setPromptText("Y coord");
+
+            Button searchBtn = new Button("Point search");
+            TextField xMinInput = new TextField();
+            xMinInput.setPromptText("X Min");
+            xMinInput.setPrefWidth(60);
+
+            TextField yMinInput = new TextField();
+            yMinInput.setPromptText("Y Min");
+            yMinInput.setPrefWidth(60);
+
+            TextField xMaxInput = new TextField();
+            xMaxInput.setPromptText("X Max");
+            xMaxInput.setPrefWidth(60);
+
+            TextField yMaxInput = new TextField();
+            yMaxInput.setPromptText("Y Max");
+            yMaxInput.setPrefWidth(60);
+
+            Button rangeBtn = new Button("Range Scan");
+
+            rangeBtn.setOnAction(e -> {
+                try {
+                    double xMin = Double.parseDouble(xMinInput.getText());
+                    double yMin = Double.parseDouble(yMinInput.getText());
+                    double xMax = Double.parseDouble(xMaxInput.getText());
+                    double yMax = Double.parseDouble(yMaxInput.getText());
+
+                    QuadTreeBoundingBox searchBox = new QuadTreeBoundingBox(
+                            new ArrayList<>(List.of(xMin, yMin)),
+                            new ArrayList<>(List.of(xMax, yMax))
+                    );
+
+                    List<QuadTreePoint> foundPoints = this.root.rangeScan(searchBox);
+
+                    System.out.println("--- Range Scan Výsledky (" + foundPoints.size() + ") ---");
+                    for (QuadTreePoint p : foundPoints) {
+                        System.out.println(p.getData().getCity() + ": " + p.getData().getAddress());
+                        ctx.setStroke(Color.BLUE);
+                        ctx.strokeRect(p.getCoords().get(0) - 4, p.getCoords().get(1) - 4, 8, 8);
+                    }
+                } catch (NumberFormatException ex) {
+                    System.out.println("Chyba: Zadej platná čísla pro Range Scan!");
+                }
+            });
+
+
+            searchBtn.setOnAction(e -> {
+                try {
+                    double x = Double.parseDouble(xInput.getText());
+                    double y = Double.parseDouble(yInput.getText());
+
+                    QuadTreePoint searchTarget = new QuadTreePoint(new ArrayList<>(List.of(x, y)), null);
+
+                    QuadTreePoint found = this.root.pointSearch(searchTarget);
+
+                    if (found != null) {
+                        System.out.println("Nalezeno: " + found.getData().getCity() + ", " + found.getData().getAddress());
+                        ctx.setStroke(Color.LIME);
+                        ctx.setLineWidth(2);
+                        ctx.strokeOval(x - 5, y - 5, 10, 10);
+                    } else {
+                        System.out.println("Bod na těchto souřadnicích neexistuje.");
+                    }
+                } catch (NumberFormatException ex) {
+                    System.out.println("Zadej platná čísla!");
+                }
+            });
+
+
+            HBox row1 = new HBox(10, xInput, yInput, searchBtn);
+            row1.setAlignment(Pos.CENTER);
+
+            HBox row2 = new HBox(10, xMinInput, yMinInput, xMaxInput, yMaxInput, rangeBtn);
+            row2.setAlignment(Pos.CENTER);
+
+            VBox controls = new VBox(10, row1, row2);
+            controls.setPadding(new Insets(10));
+            controls.setStyle("-fx-background-color: #f0f0f0;");
+
+            VBox mainLayout = new VBox(canvas, controls);
+            mainLayout.setAlignment(Pos.CENTER);
 
             primaryStage.setTitle("QuadTree JavaFX Visualizer");
-            primaryStage.setScene(new Scene(rootPane, CANVAS_WIDTH, CANVAS_HEIGHT));
+            primaryStage.setScene(new Scene(mainLayout, CANVAS_WIDTH, CANVAS_HEIGHT + 110));
             primaryStage.show();
 
         } catch (Exception e) {

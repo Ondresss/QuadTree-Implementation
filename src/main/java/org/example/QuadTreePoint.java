@@ -25,13 +25,29 @@ public class QuadTreePoint {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         QuadTreePoint that = (QuadTreePoint) o;
-        return Objects.equals(coords, that.coords);
+        if (this.coords.size() != that.coords.size()) return false;
+        double epsilon = 1e-6;
+        for (int i = 0; i < coords.size(); i++) {
+            if (Math.abs(this.coords.get(i) - that.coords.get(i)) > epsilon) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
         return Objects.hashCode(coords);
+    }
+
+    public QuadTreeData getData() {
+        return data;
+    }
+
+    public void setData(QuadTreeData data) {
+        this.data = data;
     }
 }
