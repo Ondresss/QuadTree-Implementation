@@ -164,7 +164,8 @@ public class QuadTreeApp extends  Application {
                             "-fx-background-radius: 5; " +
                             "-fx-cursor: hand;"
             );
-
+            javafx.scene.control.Label noPointsLabel = new javafx.scene.control.Label(String.format("Number of points: %d",this.loadPoints("./points.csv").size()));
+            noPointsLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: darkred;");
             generateButton.setOnAction(e -> {
                 try {
                     int n = Integer.parseInt(countInput.getText());
@@ -173,6 +174,7 @@ public class QuadTreeApp extends  Application {
                     for(QuadTreePoint p : loadedPoints) {
                         this.root.insert(p);
                     }
+                    noPointsLabel.setText(String.format("Number of points: %d",loadedPoints.size()));
                     this.drawNode(this.root);
 
 
@@ -186,7 +188,8 @@ public class QuadTreeApp extends  Application {
 
             TextField generateInput = new TextField(); yMaxDel.setPromptText("N Points");
 
-            VBox generateBox = new VBox(3,generateLabel,generateButton,countInput);
+
+            VBox generateBox = new VBox(3,generateLabel,generateButton,countInput,noPointsLabel);
 
             VBox deleteBox = new VBox(5, deleteLabel, xMinDel, yMinDel, xMaxDel, yMaxDel, deleteAreaBtn);
             deleteBox.getChildren().add(timeLabel);
