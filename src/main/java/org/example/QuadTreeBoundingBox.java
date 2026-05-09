@@ -15,6 +15,17 @@ public class QuadTreeBoundingBox  {
         this.dimensions = min.size();
     }
 
+    public Boolean contains(QuadTreePoint point) {
+        List<Double> coords = point.getCoords();
+        for(int i = 0; i < coords.size(); ++i) {
+            if(coords.get(i) >= this.min.get(i) && coords.get(i) <= this.max.get(i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     public Boolean intersects(QuadTreeBoundingBox boundingBox) {
         List<Double> boxMins = boundingBox.getMin();
         List<Double> boxMaxs = boundingBox.getMax();

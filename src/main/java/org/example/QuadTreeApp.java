@@ -6,12 +6,12 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -24,6 +24,7 @@ public class QuadTreeApp extends  Application {
     private final int CANVAS_WIDTH = 800;
     private final int CANVAS_HEIGHT = 800;
     private GraphicsContext ctx = null;
+    private RandomPointGenerator generator;
     @Override
     public void start(Stage primaryStage) throws Exception {
         try {
@@ -38,37 +39,54 @@ public class QuadTreeApp extends  Application {
             this.root = new QuadTreeNode(2, 4, rootBox,10);
             Canvas canvas = new Canvas(this.CANVAS_WIDTH,this.CANVAS_HEIGHT);
             this.ctx = canvas.getGraphicsContext2D();
-
+            this.generator = new RandomPointGenerator(2,"./points.csv");
 
             for(QuadTreePoint point : points) {
                 this.root.insert(point);
             }
 
             this.drawNode(this.root);
+            VBox menu = new VBox(15);
+            menu.setPadding(new Insets(20));
+            menu.setPrefWidth(250);
+            menu.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #cccccc; -fx-border-width: 0 0 0 1;");
+
+            javafx.scene.control.Label pointSearchLabel = new javafx.scene.control.Label("Point Search");
+            pointSearchLabel.setStyle("-fx-font-weight: bold;");
+
             TextField xInput = new TextField();
             xInput.setPromptText("X coord");
-
             TextField yInput = new TextField();
             yInput.setPromptText("Y coord");
+            Button searchBtn = new Button("Search Point");
+            searchBtn.setMaxWidth(Double.MAX_VALUE);
 
-            Button searchBtn = new Button("Point search");
+            VBox pointSearchBox = new VBox(5, pointSearchLabel, xInput, yInput, searchBtn);
+
+            javafx.scene.control.Label rangeScanLabel = new javafx.scene.control.Label("Range Scan (Box)");
+            rangeScanLabel.setStyle("-fx-font-weight: bold;");
+
+            Label timeLabel = new Label("Last operation: - ms");
+
+            timeLabel.setStyle("-fx-font-size: 16px; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-font-style: italic; " +
+                    "-fx-text-fill: #444;");
+
             TextField xMinInput = new TextField();
             xMinInput.setPromptText("X Min");
-            xMinInput.setPrefWidth(60);
-
             TextField yMinInput = new TextField();
             yMinInput.setPromptText("Y Min");
-            yMinInput.setPrefWidth(60);
-
             TextField xMaxInput = new TextField();
             xMaxInput.setPromptText("X Max");
-            xMaxInput.setPrefWidth(60);
-
             TextField yMaxInput = new TextField();
             yMaxInput.setPromptText("Y Max");
-            yMaxInput.setPrefWidth(60);
+            Button rangeBtn = new Button("Scan Area");
+            rangeBtn.setMaxWidth(Double.MAX_VALUE);
 
-            Button rangeBtn = new Button("Range Scan");
+            VBox rangeScanBox = new VBox(5, rangeScanLabel, xMinInput, yMinInput, xMaxInput, yMaxInput, rangeBtn);
+
+            menu.getChildren().addAll(pointSearchBox, new javafx.scene.control.Separator(), rangeScanBox);
 
             rangeBtn.setOnAction(e -> {
                 try {
@@ -82,58 +100,135 @@ public class QuadTreeApp extends  Application {
                             new ArrayList<>(List.of(xMax, yMax))
                     );
 
+                    long startTime = System.nanoTime();
+
                     List<QuadTreePoint> foundPoints = this.root.rangeScan(searchBox);
 
-                    System.out.println("--- Range Scan Výsledky (" + foundPoints.size() + ") ---");
+                    long endTime = System.nanoTime();
+
+                    double durationMillis = (endTime - startTime) / 1_000_000.0;
+
+                    timeLabel.setText(String.format("Range Scan: %.4f ms (%d bodů)", durationMillis, foundPoints.size()));
+
+                    System.out.println("--- Range Scan Results (" + foundPoints.size() + ") ---");
+                    System.out.println("--- Range Scan Results (" + foundPoints.size() + ") ---");
                     for (QuadTreePoint p : foundPoints) {
-                        System.out.println(p.getData().getCity() + ": " + p.getData().getAddress());
                         ctx.setStroke(Color.BLUE);
                         ctx.strokeRect(p.getCoords().get(0) - 4, p.getCoords().get(1) - 4, 8, 8);
                     }
-                } catch (NumberFormatException ex) {
-                    System.out.println("Chyba: Zadej platná čísla pro Range Scan!");
-                }
+                } catch (Exception ex) { System.out.println("Error in range scan"); }
             });
-
 
             searchBtn.setOnAction(e -> {
                 try {
                     double x = Double.parseDouble(xInput.getText());
                     double y = Double.parseDouble(yInput.getText());
-
                     QuadTreePoint searchTarget = new QuadTreePoint(new ArrayList<>(List.of(x, y)), null);
-
                     QuadTreePoint found = this.root.pointSearch(searchTarget);
 
                     if (found != null) {
-                        System.out.println("Nalezeno: " + found.getData().getCity() + ", " + found.getData().getAddress());
                         ctx.setStroke(Color.LIME);
                         ctx.setLineWidth(2);
                         ctx.strokeOval(x - 5, y - 5, 10, 10);
-                    } else {
-                        System.out.println("Bod na těchto souřadnicích neexistuje.");
+
+                        this.showPoint(found);
                     }
+                } catch (Exception ex) { System.out.println("Chyba v Point Search vstupu!"); }
+            });
+
+            javafx.scene.control.Label deleteLabel = new javafx.scene.control.Label("Delete Area (Box)");
+            deleteLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: darkred;");
+
+            TextField xMinDel = new TextField(); xMinDel.setPromptText("X Min");
+            TextField yMinDel = new TextField(); yMinDel.setPromptText("Y Min");
+            TextField xMaxDel = new TextField(); xMaxDel.setPromptText("X Max");
+            TextField yMaxDel = new TextField(); yMaxDel.setPromptText("Y Max");
+
+
+            Button deleteAreaBtn = new Button("Delete Area");
+            deleteAreaBtn.setMaxWidth(Double.MAX_VALUE);
+            deleteAreaBtn.setStyle("-fx-base: #ff9999;");
+
+            javafx.scene.control.Label generateLabel = new javafx.scene.control.Label("Generate Next N points");
+            generateLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2c3e50;");
+
+            TextField countInput = new TextField("100");
+            countInput.setPromptText("Počet bodů...");
+
+            Button generateButton = new Button("Generate");
+            generateButton.setMaxWidth(Double.MAX_VALUE);
+            generateButton.setStyle(
+                    "-fx-background-color: #3498db; " +
+                            "-fx-text-fill: white; " +
+                            "-fx-font-weight: bold; " +
+                            "-fx-background-radius: 5; " +
+                            "-fx-cursor: hand;"
+            );
+
+            generateButton.setOnAction(e -> {
+                try {
+                    int n = Integer.parseInt(countInput.getText());
+                    this.generator.appendNextNPoints(n);
+                    ArrayList<QuadTreePoint> loadedPoints = this.loadPoints("./points.csv");
+                    for(QuadTreePoint p : loadedPoints) {
+                        this.root.insert(p);
+                    }
+                    this.drawNode(this.root);
+
+
                 } catch (NumberFormatException ex) {
-                    System.out.println("Zadej platná čísla!");
+
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+            pointSearchLabel.setStyle("-fx-font-weight: bold;");
+
+            TextField generateInput = new TextField(); yMaxDel.setPromptText("N Points");
+
+            VBox generateBox = new VBox(3,generateLabel,generateButton,countInput);
+
+            VBox deleteBox = new VBox(5, deleteLabel, xMinDel, yMinDel, xMaxDel, yMaxDel, deleteAreaBtn);
+            deleteBox.getChildren().add(timeLabel);
+            menu.getChildren().addAll(new javafx.scene.control.Separator(), deleteBox,generateBox);
+
+            deleteAreaBtn.setOnAction(e -> {
+                try {
+                    double xMin = Double.parseDouble(xMinDel.getText());
+                    double yMin = Double.parseDouble(yMinDel.getText());
+                    double xMax = Double.parseDouble(xMaxDel.getText());
+                    double yMax = Double.parseDouble(yMaxDel.getText());
+
+                    QuadTreeBoundingBox areaToDelete = new QuadTreeBoundingBox(
+                            new ArrayList<>(List.of(xMin, yMin)),
+                            new ArrayList<>(List.of(xMax, yMax))
+                    );
+                    long startTime = System.nanoTime();
+                    boolean changed = this.root.deleteArea(areaToDelete);
+
+                    long endTime = System.nanoTime();
+
+                    long durationNano = (endTime - startTime);
+                    double durationMillis = durationNano / 1_000_000.0;
+
+                    System.out.println("Delete took " + durationMillis + " ms");
+                    timeLabel.setText(String.format("Delete took: %.4f ms", durationMillis));
+                    if (changed) {
+                        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                        this.drawNode(this.root);
+                    } else {
+                        System.out.println("No points found");
+                        timeLabel.setText(timeLabel.getText() + " (not found)");
+                    }
+                } catch (Exception ex) {
+                    System.out.println("Error while deleting");
                 }
             });
 
-
-            HBox row1 = new HBox(10, xInput, yInput, searchBtn);
-            row1.setAlignment(Pos.CENTER);
-
-            HBox row2 = new HBox(10, xMinInput, yMinInput, xMaxInput, yMaxInput, rangeBtn);
-            row2.setAlignment(Pos.CENTER);
-
-            VBox controls = new VBox(10, row1, row2);
-            controls.setPadding(new Insets(10));
-            controls.setStyle("-fx-background-color: #f0f0f0;");
-
-            VBox mainLayout = new VBox(canvas, controls);
-            mainLayout.setAlignment(Pos.CENTER);
+            HBox mainLayout = new HBox(canvas, menu);
 
             primaryStage.setTitle("QuadTree JavaFX Visualizer");
-            primaryStage.setScene(new Scene(mainLayout, CANVAS_WIDTH, CANVAS_HEIGHT + 110));
+            primaryStage.setScene(new Scene(mainLayout, CANVAS_WIDTH + 250, CANVAS_HEIGHT));
             primaryStage.show();
 
         } catch (Exception e) {
@@ -166,22 +261,83 @@ public class QuadTreeApp extends  Application {
     }
 
     ArrayList<QuadTreePoint> loadPoints(String filename) throws IOException {
-        InputStream is = getClass().getClassLoader().getResourceAsStream(filename);
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(filename));
         ArrayList<QuadTreePoint> points = new ArrayList<>();
         String line;
-        while((line = bufferedReader.readLine()) != null) {
-            String[] pointsStr = line.split(",");
-            ArrayList<Double> coords = new ArrayList<>();
-            for(int i = 0; i < 2; ++i) {
-                Double quadPointDouble = Double.parseDouble(pointsStr[i]);
-                coords.add(quadPointDouble);
+
+        try {
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] pointsStr = line.split(",");
+
+                ArrayList<Double> coords = new ArrayList<>();
+                for (int i = 0; i < 2; ++i) {
+                    Double quadPointDouble = Double.parseDouble(pointsStr[i]);
+                    coords.add(quadPointDouble);
+                }
+
+                QuadTreeData data = new QuadTreeData(pointsStr[2], pointsStr[3], pointsStr[4]);
+                points.add(new QuadTreePoint(coords, data));
             }
-            QuadTreeData data = new QuadTreeData(pointsStr[2],pointsStr[3],pointsStr[4]);
-            points.add(new QuadTreePoint(coords,data));
+        } finally {
+            bufferedReader.close();
         }
-        bufferedReader.close();
+
         return points;
+    }
+
+    void showPoint(QuadTreePoint point) {
+        if (point == null) return;
+
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Info about point");
+
+        VBox vbox = new VBox(15);
+        vbox.setPadding(new javafx.geometry.Insets(20));
+        vbox.setPrefWidth(300);
+        vbox.setStyle("-fx-background-color: white;");
+
+        Label headPos = new Label("Location in tree");
+        headPos.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 14px;");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(5);
+
+        List<Double> coords = point.getCoords();
+        for (int i = 0; i < coords.size(); i++) {
+            String label = (i == 0) ? "X:" : (i == 1) ? "Y:" : "... " + (i + 1) + ":";
+            grid.add(new Label(label), 0, i);
+            grid.add(new Label(String.format("%.2f", coords.get(i))), 1, i);
+        }
+
+        Separator sep = new Separator();
+        Label headData = new Label("Data");
+        headData.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 14px;");
+
+        VBox dataBox = new VBox(5);
+
+        Object rawData = point.getData();
+        if (rawData instanceof QuadTreeData d) {
+            dataBox.getChildren().addAll(
+                    new Label("Country: " + d.getCountry()),
+                    new Label("City: " + d.getCity()),
+                    new Label("Address: " + d.getAddress())
+            );
+        } else {
+            dataBox.getChildren().add(new Label("Bod isnt in tree"));
+        }
+
+        Button closeBtn = new Button("Close");
+        closeBtn.setMaxWidth(Double.MAX_VALUE);
+        closeBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;");
+        closeBtn.setOnAction(e -> popupStage.close());
+
+        vbox.getChildren().addAll(headPos, grid, sep, headData, dataBox, closeBtn);
+
+        Scene scene = new Scene(vbox);
+        popupStage.setScene(scene);
+        popupStage.show();
     }
 
 }

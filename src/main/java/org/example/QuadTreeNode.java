@@ -63,6 +63,69 @@ public class QuadTreeNode {
         }
     }
 
+    public Boolean delete(QuadTreePoint point) {
+        if(!this.children.isEmpty()) {
+            int index = this.getPointIndex(point, this.boundingBox.getMids());
+
+            Boolean wasDeleted = this.children.get(index).delete(point);
+
+            if (wasDeleted) {
+                this.merge();
+            }
+
+            return wasDeleted;
+        }
+
+        for(int i = 0; i < this.points.size(); ++i) {
+            if(this.points.get(i).equals(point)) {
+                this.points.remove(i);
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    private void merge() {
+        for (QuadTreeNode child : this.children) {
+            if (!child.getChildren().isEmpty()) {
+                return;
+            }
+        }
+
+        List<QuadTreePoint> childrenPoints = new ArrayList<>();
+        for (QuadTreeNode child : this.children) {
+            childrenPoints.addAll(child.getPoints());
+        }
+        if (childrenPoints.size() <= this.capacity) {
+            this.children.clear();
+            this.points.addAll(childrenPoints);
+        }
+    }
+
+
+    public boolean deleteArea(QuadTreeBoundingBox searchBox) {
+        boolean anyDeleted = false;
+
+        if (!this.children.isEmpty()) {
+            for (QuadTreeNode child : this.children) {
+                if (child.boundingBox.intersects(searchBox)) {
+                    if (child.deleteArea(searchBox)) {
+                        anyDeleted = true;
+                    }
+                }
+            }
+            if (anyDeleted) {
+                this.merge();
+            }
+        } else {
+            anyDeleted = this.points.removeIf(p -> searchBox.contains(p));
+        }
+
+        return anyDeleted;
+    }
+
+
     private Boolean alreadyHasPoint(QuadTreePoint point) {
         for(QuadTreePoint p : this.points) {
             if(p.equals(point)) return true;
@@ -107,6 +170,11 @@ public class QuadTreeNode {
         }
         return index;
     }
+
+
+
+
+
 
     public int getDimension() {
         return dimension;
