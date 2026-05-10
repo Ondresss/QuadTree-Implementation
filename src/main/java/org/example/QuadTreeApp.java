@@ -36,7 +36,7 @@ public class QuadTreeApp extends  Application {
             maxs.add((double)this.CANVAS_WIDTH);
             maxs.add((double)this.CANVAS_HEIGHT);
             QuadTreeBoundingBox rootBox = new QuadTreeBoundingBox(mins, maxs);
-            this.root = new QuadTreeNode(2, 4, rootBox,10);
+            this.root = new QuadTreeNode(2, 30, rootBox,15);
             Canvas canvas = new Canvas(this.CANVAS_WIDTH,this.CANVAS_HEIGHT);
             this.ctx = canvas.getGraphicsContext2D();
             this.generator = new RandomPointGenerator(2,"./points.csv");
@@ -169,12 +169,13 @@ public class QuadTreeApp extends  Application {
             generateButton.setOnAction(e -> {
                 try {
                     int n = Integer.parseInt(countInput.getText());
-                    this.generator.appendNextNPoints(n);
-                    ArrayList<QuadTreePoint> loadedPoints = this.loadPoints("./points.csv");
-                    for(QuadTreePoint p : loadedPoints) {
+                    List<QuadTreePoint> appendedPoints =  this.generator.appendNextNPoints(n);
+                    ArrayList<QuadTreePoint> allPoints = this.loadPoints("./points.csv");
+
+                    for(QuadTreePoint p : appendedPoints) {
                         this.root.insert(p);
                     }
-                    noPointsLabel.setText(String.format("Number of points: %d",loadedPoints.size()));
+                    noPointsLabel.setText(String.format("Number of points: %d",allPoints.size()));
                     this.drawNode(this.root);
 
 
@@ -225,6 +226,37 @@ public class QuadTreeApp extends  Application {
                     }
                 } catch (Exception ex) {
                     System.out.println("Error while deleting");
+                }
+            });
+            javafx.scene.control.Label reorgLabel = new javafx.scene.control.Label("Tree Optimization");
+            reorgLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #27ae60;");
+
+            Button reorgBtn = new Button("Optimize & Rebalance");
+            reorgBtn.setMaxWidth(Double.MAX_VALUE);
+            reorgBtn.setStyle(
+                    "-fx-background-color: #27ae60; " +
+                            "-fx-text-fill: white; " +
+                            "-fx-font-weight: bold; " +
+                            "-fx-background-radius: 5; " +
+                            "-fx-cursor: hand;"
+            );
+
+            VBox reorgBox = new VBox(5, reorgLabel, reorgBtn);
+            menu.getChildren().addAll(new javafx.scene.control.Separator(), reorgBox);
+
+            reorgBtn.setOnAction(e -> {
+                try {
+                    long startTime = System.nanoTime();
+                    this.root = this.root.rebalance();
+                    long endTime = System.nanoTime();
+                    double durationMillis = (endTime - startTime) / 1_000_000.0;
+                    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                    this.drawNode(this.root);
+                    timeLabel.setText(String.format("Optimize: %.4f ms", durationMillis));
+                    System.out.println("Tree optimization complete in " + durationMillis + " ms");
+
+                } catch (Exception ex) {
+                    System.out.println("Error during rebalance: " + ex.getMessage());
                 }
             });
 

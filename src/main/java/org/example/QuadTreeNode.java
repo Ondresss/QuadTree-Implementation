@@ -86,6 +86,20 @@ public class QuadTreeNode {
 
     }
 
+    public QuadTreeNode rebalance() {
+        if(this.children.isEmpty()) {
+            return this;
+        }
+
+        for(int i = 0; i < this.children.size(); ++i) {
+            QuadTreeNode rebalancedChild = this.children.get(i).rebalance();
+            this.children.set(i,rebalancedChild);
+        }
+
+        this.merge();
+        return this;
+    }
+
     private void merge() {
         for (QuadTreeNode child : this.children) {
             if (!child.getChildren().isEmpty()) {
@@ -98,8 +112,11 @@ public class QuadTreeNode {
             childrenPoints.addAll(child.getPoints());
         }
         if (childrenPoints.size() <= this.capacity) {
+            System.out.println("DEBUG: Sloučeno " + childrenPoints.size() + " bodů do jednoho listu.");
             this.children.clear();
             this.points.addAll(childrenPoints);
+        } else {
+            System.out.println("DEBUG: Nelze sloučit, příliš mnoho bodů: " + childrenPoints.size());
         }
     }
 

@@ -3,13 +3,10 @@ package org.example;
 import java.io.BufferedWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
+import java.util.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 public class RandomPointGenerator {
@@ -27,10 +24,11 @@ public class RandomPointGenerator {
         this.outputFile = outputFile;
     }
 
-    public void appendNextNPoints(int N) {
+    public List<QuadTreePoint> appendNextNPoints(int N) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile, true))) {
+            List<QuadTreePoint> points = new ArrayList<QuadTreePoint>(N);
             for (int i = 0; i < N; i++) {
-                List<Double> coords = new ArrayList<>();
+                ArrayList<Double> coords = new ArrayList<>();
                 for (int d = 0; d < dimension; d++) {
                     coords.add(random.nextDouble() * 800.0);
                 }
@@ -43,13 +41,15 @@ public class RandomPointGenerator {
                         .collect(Collectors.joining(","));
 
                 String line = String.format("%s,%s,%s,%s", coordsString, country, city, address);
-
+                points.add(new QuadTreePoint(coords,new QuadTreeData(country,address,city)));
                 writer.write(line);
                 writer.newLine();
             }
             System.out.println("Wrote " + N + " points to file " + outputFile);
+            return points;
         } catch (IOException e) {
             System.err.println("Error while writing to file: " + e.getMessage());
         }
+        return Collections.emptyList();
     }
 }
